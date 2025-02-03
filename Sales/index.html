@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipt Printer</title>
+    <link rel="stylesheet" href="main.css">
+    <style>
+      
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <!-- <a href="../Home/index.html">Grocery Shop</a> -->
+        <nav class="navbar"></nav>
+    </header>
+
+    <form id="productForm">
+        <label for="itemName">Item Name:</label>
+        <input type="text" id="itemName" name="itemName" required><br><br>
+
+        <label for="price">Price:</label>
+        <input type="number" id="price" name="price" required><br><br>
+
+        <label for="quantity">Quantity:</label>
+        <input type="number" id="quantity" name="quantity" step="any" required><br><br>
+
+        <button type="submit">Add to Table</button>
+    </form>
+
+    <table id="productsTable">
+        <thead>
+            <tr>
+                <th>Item Name</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Total</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Dynamic rows will be added here -->
+        </tbody>
+    </table>
+
+    <div id="receipt-container">
+        <h2>Shop</h2>
+        <pre id="receipt">Receipt:</pre>
+    </div>
+
+    <button onclick="printReceipt()">Print Receipt</button>
+    <button onclick="clearTable()">Clear Table</button>
+
+    <script>
+         document.addEventListener("DOMContentLoaded", function () {
+    let itemName = localStorage.getItem("itemName");
+    document.getElementById("displayItem").textContent = itemName ? itemName : "No item selected";
+  });
+  document.addEventListener("DOMContentLoaded", function () {
+    let itemName = localStorage.getItem("itemName") || "No item selected";
+    let itemPrice = localStorage.getItem("itemPrice") || "0.00";
+
+    document.getElementById("displayItem").textContent = itemName;
+    document.getElementById("displayPrice").textContent = itemPrice;
+  });
+
+  
+  function getQueryParam(param) {
+    let urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(param);
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    let itemName = getQueryParam("item") || "No item selected";
+    let itemPrice = getQueryParam("price") || "0.00";
+
+    document.getElementById("displayItem").textContent = decodeURIComponent(itemName);
+    document.getElementById("displayPrice").textContent = itemPrice;
+  });
+
+  function getQueryParam(param) {
+    let urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(param);
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    let itemName = getQueryParam("item");
+    document.getElementById("displayItem").textContent = itemName ? decodeURIComponent(itemName) : "No item selected";
+  });
+function saveData(data) {
+            localStorage.setItem('products', JSON.stringify(data));
+        }
+
+        function loadData() {
+            const storedData = localStorage.getItem('products');
+            return storedData ? JSON.parse(storedData) : [];
+        }
+
+        function updateTable() {
+            const products = loadData();
+            const tableBody = document.querySelector('#productsTable tbody');
+            tableBody.innerHTML = '';
+
+            products.forEach((product, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${product.itemName}</td>
+                    <td>${product.price}</td>
+                    <td>${product.quantity}</td>
+                    <td>${product.total}</td>
+                    <td>
+                        <button onclick="editProduct(${index})">Edit</button>
+                        <button onclick="deleteProduct(${index})">Delete</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            updateReceipt(products);
+        }
+
+        function updateReceipt(products) {
+            const receipt = document.getElementById('receipt');
+            let receiptText = 'Receipt:\n\n';
+            let grandTotal = 0;
+
+            products.forEach(product => {
+                receiptText += `${product.itemName} - ${product.price} x ${product.quantity} = ${product.total}\n`;
+                grandTotal += product.total;
+            });
+
+            receiptText += `\nGrand Total: ${grandTotal}`;
+            receipt.textContent = receiptText;
+        }
+
+        function printReceipt() {
+            window.print();
+        }
+
+        function clearTable() {
+            localStorage.removeItem('products');
+            updateTable();
+        }
+
+        document.getElementById('productForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const itemName = document.getElementById('itemName').value;
+            const price = parseFloat(document.getElementById('price').value);
+            const quantity = parseFloat(document.getElementById('quantity').value);
+            const total = price * quantity;
+
+            const newProduct = { itemName, price, quantity, total };
+
+            const products = loadData();
+            products.push(newProduct);
+
+            saveData(products);
+            updateTable();
+
+            document.getElementById('productForm').reset();
+        });
+
+        function editProduct(index) {
+            const products = loadData();
+            const product = products[index];
+
+            document.getElementById('itemName').value = product.itemName;
+            document.getElementById('price').value = product.price;
+            document.getElementById('quantity').value = product.quantity;
+
+            products.splice(index, 1);
+            saveData(products);
+            updateTable();
+        }
+
+        function deleteProduct(index) {
+            const products = loadData();
+            products.splice(index, 1);
+            saveData(products);
+            updateTable();
+        }
+
+        window.onload = updateTable;
+
+        document.addEventListener("keydown", function(event) {
+            let inputs = [...document.querySelectorAll("input, button")];
+            let focusedIndex = inputs.indexOf(document.activeElement);
+
+            if (event.key === "ArrowDown" && focusedIndex < inputs.length - 1) {
+                event.preventDefault();
+                inputs[focusedIndex + 1].focus();
+            }
+            if (event.key === "ArrowUp" && focusedIndex > 0) {
+                event.preventDefault();
+                inputs[focusedIndex - 1].focus();
+            }
+            if (event.key === "ArrowRight" && focusedIndex < inputs.length - 1) {
+                event.preventDefault();
+                inputs[focusedIndex + 1].focus();
+            }
+            if (event.key === "ArrowLeft" && focusedIndex > 0) {
+                event.preventDefault();
+                inputs[focusedIndex - 1].focus();
+            }
+            if (event.key === "Enter" && document.activeElement.tagName === "BUTTON") {
+                event.preventDefault();
+                document.activeElement.click();
+            }
+        });
+    </script>
+
+    <footer class="footer"></footer>
+
+</body>
+</html>

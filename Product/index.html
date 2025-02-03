@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRODUCT PAGE</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+
+<body>
+    <header class="header">
+        <a href="../Home/index.html">Grocery Shop</a>
+        <nav class="navbar">
+        </nav>
+    </header>
+    <h2 class="main_heading">Create Product</h2>
+    <form id="itemForm">
+        <input type="text" id="itemName" placeholder="Item Name" required>
+        <input type="text" id="itemQuantity" placeholder="Category" required>
+        <input type="text" id="sellingPrice" placeholder="Selling Price" required>
+        <button type="submit">Add Item</button>
+    </form>
+
+    <h2 class="sub_heading">Item List</h2>
+    <table id="itemTable">
+        <thead class="table_data">
+            <tr>
+                <th>Item Name</th>
+                <th>Category</th>
+                <th>Selling Price</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+
+function generatePrice() {
+    return (Math.random() * (5000 - 5) + 5).toFixed(2); // Generates price between $10 and $50
+  }
+
+  function saveItem() {
+    let itemName = document.getElementById("itemName").value;
+    let itemPrice = generatePrice();
+
+    localStorage.setItem("itemName", itemName);
+    localStorage.setItem("itemPrice", itemPrice);
+
+    window.location.href = "sales.html"; // Redirect to Sales Page
+  }
+
+function generatePrice() {
+    return (Math.random() * (5000 - 5) + 5).toFixed(2); // Generates price between $10 and $50
+  }
+
+  function redirectToSales() {
+    let itemName = encodeURIComponent(document.getElementById("itemName").value);
+    let itemPrice = generatePrice();
+
+    window.location.href = "sales.html?item=" + itemName + "&price=" + itemPrice;
+  } 
+        function saveItem() {
+            let itemName = document.getElementById("itemName").value;
+            localStorage.setItem("itemName", itemName);
+            window.location.href = "sales.html"; // Redirect to Sales Page
+        }
+
+        function redirectToSales() {
+    let itemName = encodeURIComponent(document.getElementById("itemName").value);
+    window.location.href = "sales.html?item=" + itemName;
+  }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('itemForm');
+            const tableBody = document.getElementById('itemTable').getElementsByTagName('tbody')[0];
+
+            function saveData() {
+                const data = [];
+                tableBody.querySelectorAll('tr').forEach(row => {
+                    data.push({
+                        name: row.cells[0].textContent,
+                        quantity: row.cells[1].textContent,
+                        price: row.cells[2].textContent
+                    });
+                });
+                sessionStorage.setItem('items', JSON.stringify(data));
+            }
+
+            function loadData() {
+                const storedData = JSON.parse(sessionStorage.getItem('items')) || [];
+                storedData.forEach(item => addItemToTable(item.name, item.quantity, item.price));
+            }
+
+            function addItemToTable(name, quantity, price) {
+                let newRow = tableBody.insertRow();
+                let nameCell = newRow.insertCell(0);
+                let quantityCell = newRow.insertCell(1);
+                let priceCell = newRow.insertCell(2);
+                let actionCell = newRow.insertCell(3);
+
+                nameCell.textContent = name;
+                quantityCell.textContent = quantity;
+                priceCell.textContent = price;
+
+                let deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Delete';
+                deleteBtn.onclick = function () {
+                    newRow.remove();
+                    saveData();
+                };
+
+                let editBtn = document.createElement('button');
+                editBtn.textContent = 'Edit';
+                editBtn.onclick = function () {
+                    let newName = prompt('Enter new item name:', nameCell.textContent);
+                    let newQuantity = prompt('Enter new quantity:', quantityCell.textContent);
+                    let newPrice = prompt('Enter new price:', priceCell.textContent);
+
+                    if (newName) nameCell.textContent = newName;
+                    if (newQuantity) quantityCell.textContent = newQuantity;
+                    if (newPrice) priceCell.textContent = newPrice;
+
+                    saveData();
+                };
+
+                actionCell.appendChild(editBtn);
+                actionCell.appendChild(deleteBtn);
+                saveData();
+            }
+
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+                let itemName = document.getElementById('itemName').value;
+                let itemQuantity = document.getElementById('itemQuantity').value;
+                let sellingPrice = document.getElementById('sellingPrice').value;
+                addItemToTable(itemName, itemQuantity, sellingPrice);
+                form.reset();
+            });
+
+            loadData();
+        });
+
+
+        document.addEventListener("keydown", function (event) {
+            let inputs = [...document.querySelectorAll("input, button")];
+            let focusedIndex = inputs.indexOf(document.activeElement);
+
+            if (event.key === "ArrowDown" && focusedIndex < inputs.length - 1) {
+                event.preventDefault();
+                inputs[focusedIndex + 1].focus();
+            }
+            if (event.key === "ArrowUp" && focusedIndex > 0) {
+                event.preventDefault();
+                inputs[focusedIndex - 1].focus();
+            }
+            if (event.key === "ArrowRight" && focusedIndex < inputs.length - 1) {
+                event.preventDefault();
+                inputs[focusedIndex + 1].focus();
+            }
+            if (event.key === "ArrowLeft" && focusedIndex > 0) {
+                event.preventDefault();
+                inputs[focusedIndex - 1].focus();
+            }
+            if (event.key === "Enter" && document.activeElement.tagName === "BUTTON") {
+                event.preventDefault();
+                document.activeElement.click();
+            }
+        });
+        
+
+    </script>
+    <footer class="footer">
+        <p>&copy; 2025 Grocery. All Rights Reserved.</p>
+    </footer>
+</body>
+
+</html>
