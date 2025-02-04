@@ -169,25 +169,30 @@ th {
 }
 
 /* Extra small mobile styles */
-@media (max-width: 480px) {
-    .header {
-        padding: 8px;
+@media screen and (max-width: 720px) {
+    #productForm{
+        padding: 20px;
     }
 
-    .logo {
-        font-size: 1.2em;
-    }
+    #productsTable {
+        width: 20%;
 
-    .navbar li a {
-        font-size: 12px;
-        padding: 6px 12px;
     }
-
-    .footer {
-        font-size: 12px;
-    }
-
+    
     table {
-        font-size: 12px;
+        /* width: 40%; */
+        border-collapse: collapse;
+        /* margin: 20px 0; */
+    }
+    
+    th, td {
+        border: 1px solid black;
+        /* padding: 8px; */
+        text-align: left;
+    }
+    
+    th {
+        background-color: #f2f2f2;
     }
 }
+
