@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="main.css">
 </head>
 <body>
-
     <header class="header">
         <nav class="navbar"></nav>
     </header>
@@ -17,10 +16,10 @@
         <input type="text" id="itemName" name="itemName" required><br><br>
 
         <label for="price">Price:</label>
-        <input type="number" id="price" name="price" required><br><br>
+        <input type="number" id="price" name="price" step="0.01" required><br><br>
 
         <label for="quantity">Quantity:</label>
-        <input type="number" id="quantity" name="quantity" step="any" required><br><br>
+        <input type="number" id="quantity" name="quantity" step="1" required><br><br>
 
         <button type="submit">Add to Table</button>
     </form>
@@ -44,46 +43,24 @@
         <h2>Shop</h2>
         <pre id="receipt">Receipt:</pre>
     </div>
-    <button onclick="printText()">Print</button>
     <button onclick="connectPrinter()">Connect Printer</button>
     <button onclick="printReceipt()">Print Receipt</button>
     <button onclick="clearTable()">Clear Table</button>
 
     <script>
-
-let printerDevice;
+        let printerDevice;
+        
         async function connectPrinter() {
             try {
                 printerDevice = await navigator.bluetooth.requestDevice({
                     acceptAllDevices: true,
-                    optionalServices: [0x1101] // May need to specify correct service UUID
+                    optionalServices: ['00001101-0000-1000-8000-00805F9B34FB'] // Adjust UUID
                 });
                 console.log("Connected to:", printerDevice.name);
                 alert("Printer connected: " + printerDevice.name);
             } catch (error) {
                 console.error("Connection failed", error);
                 alert("Failed to connect to printer");
-            }
-        }
-
-        async function printText() {
-            if (!printerDevice) {
-                alert("Please connect to the printer first");
-                return;
-            }
-            try {
-                const text = document.getElementById("printText").value + "\n";
-                const encoder = new TextEncoder();
-                const data = encoder.encode(text);
-
-                const server = await printerDevice.gatt.connect();
-                const service = await server.getPrimaryService(0x1101); // Adjust UUID if necessary
-                const characteristic = await service.getCharacteristic(0x2A57); // Adjust UUID
-                await characteristic.writeValue(data);
-                alert("Text sent to printer");
-            } catch (error) {
-                console.error("Printing failed", error);
-                alert("Printing failed");
             }
         }
 
@@ -115,7 +92,6 @@ let printerDevice;
                 `;
                 tableBody.appendChild(row);
             });
-
             updateReceipt(products);
         }
 
@@ -151,7 +127,7 @@ let printerDevice;
 
             const itemName = document.getElementById('itemName').value.trim();
             const price = parseFloat(document.getElementById('price').value);
-            const quantity = parseFloat(document.getElementById('quantity').value);
+            const quantity = parseInt(document.getElementById('quantity').value);
 
             if (!itemName || isNaN(price) || isNaN(quantity) || price <= 0 || quantity <= 0) {
                 alert("Please enter valid item details.");
@@ -191,35 +167,8 @@ let printerDevice;
         }
 
         window.onload = updateTable;
-
-        document.addEventListener("keydown", function(event) {
-            let inputs = [...document.querySelectorAll("input, button")];
-            let focusedIndex = inputs.indexOf(document.activeElement);
-
-            if (event.key === "ArrowDown" && focusedIndex < inputs.length - 1) {
-                event.preventDefault();
-                inputs[focusedIndex + 1].focus();
-            }
-            if (event.key === "ArrowUp" && focusedIndex > 0) {
-                event.preventDefault();
-                inputs[focusedIndex - 1].focus();
-            }
-            if (event.key === "ArrowRight" && focusedIndex < inputs.length - 1) {
-                event.preventDefault();
-                inputs[focusedIndex + 1].focus();
-            }
-            if (event.key === "ArrowLeft" && focusedIndex > 0) {
-                event.preventDefault();
-                inputs[focusedIndex - 1].focus();
-            }
-            if (event.key === "Enter" && document.activeElement.tagName === "BUTTON") {
-                event.preventDefault();
-                document.activeElement.click();
-            }
-        });
     </script>
 
     <footer class="footer"></footer>
-
 </body>
 </html>
