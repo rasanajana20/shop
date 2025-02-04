@@ -5,14 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Receipt Printer</title>
     <link rel="stylesheet" href="main.css">
-    <style>
-      
-    </style>
 </head>
 <body>
 
     <header class="header">
-        <!-- <a href="../Home/index.html">Grocery Shop</a> -->
         <nav class="navbar"></nav>
     </header>
 
@@ -48,47 +44,49 @@
         <h2>Shop</h2>
         <pre id="receipt">Receipt:</pre>
     </div>
-
+    <button onclick="connectPrinter()">Connect Printer</button>
     <button onclick="printReceipt()">Print Receipt</button>
     <button onclick="clearTable()">Clear Table</button>
 
     <script>
-         document.addEventListener("DOMContentLoaded", function () {
-    let itemName = localStorage.getItem("itemName");
-    document.getElementById("displayItem").textContent = itemName ? itemName : "No item selected";
-  });
-  document.addEventListener("DOMContentLoaded", function () {
-    let itemName = localStorage.getItem("itemName") || "No item selected";
-    let itemPrice = localStorage.getItem("itemPrice") || "0.00";
 
-    document.getElementById("displayItem").textContent = itemName;
-    document.getElementById("displayPrice").textContent = itemPrice;
-  });
+let printerDevice;
+        async function connectPrinter() {
+            try {
+                printerDevice = await navigator.bluetooth.requestDevice({
+                    acceptAllDevices: true,
+                    optionalServices: [0x1101] // May need to specify correct service UUID
+                });
+                console.log("Connected to:", printerDevice.name);
+                alert("Printer connected: " + printerDevice.name);
+            } catch (error) {
+                console.error("Connection failed", error);
+                alert("Failed to connect to printer");
+            }
+        }
 
-  
-  function getQueryParam(param) {
-    let urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get(param);
-  }
+        async function printText() {
+            if (!printerDevice) {
+                alert("Please connect to the printer first");
+                return;
+            }
+            try {
+                const text = document.getElementById("printText").value + "\n";
+                const encoder = new TextEncoder();
+                const data = encoder.encode(text);
 
-  document.addEventListener("DOMContentLoaded", function () {
-    let itemName = getQueryParam("item") || "No item selected";
-    let itemPrice = getQueryParam("price") || "0.00";
+                const server = await printerDevice.gatt.connect();
+                const service = await server.getPrimaryService(0x1101); // Adjust UUID if necessary
+                const characteristic = await service.getCharacteristic(0x2A57); // Adjust UUID
+                await characteristic.writeValue(data);
+                alert("Text sent to printer");
+            } catch (error) {
+                console.error("Printing failed", error);
+                alert("Printing failed");
+            }
+        }
 
-    document.getElementById("displayItem").textContent = decodeURIComponent(itemName);
-    document.getElementById("displayPrice").textContent = itemPrice;
-  });
-
-  function getQueryParam(param) {
-    let urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get(param);
-  }
-
-  document.addEventListener("DOMContentLoaded", function () {
-    let itemName = getQueryParam("item");
-    document.getElementById("displayItem").textContent = itemName ? decodeURIComponent(itemName) : "No item selected";
-  });
-function saveData(data) {
+        function saveData(data) {
             localStorage.setItem('products', JSON.stringify(data));
         }
 
@@ -106,9 +104,9 @@ function saveData(data) {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${product.itemName}</td>
-                    <td>${product.price}</td>
+                    <td>${product.price.toFixed(2)}</td>
                     <td>${product.quantity}</td>
-                    <td>${product.total}</td>
+                    <td>${product.total.toFixed(2)}</td>
                     <td>
                         <button onclick="editProduct(${index})">Edit</button>
                         <button onclick="deleteProduct(${index})">Delete</button>
@@ -126,16 +124,20 @@ function saveData(data) {
             let grandTotal = 0;
 
             products.forEach(product => {
-                receiptText += `${product.itemName} - ${product.price} x ${product.quantity} = ${product.total}\n`;
+                receiptText += `${product.itemName} - ${product.price.toFixed(2)} x ${product.quantity} = ${product.total.toFixed(2)}\n`;
                 grandTotal += product.total;
             });
 
-            receiptText += `\nGrand Total: ${grandTotal}`;
+            receiptText += `\nGrand Total: ${grandTotal.toFixed(2)}`;
             receipt.textContent = receiptText;
         }
 
         function printReceipt() {
-            window.print();
+            const receiptText = document.getElementById("receipt").textContent;
+            const printWindow = window.open("", "", "width=400,height=600");
+            printWindow.document.write(`<pre>${receiptText}</pre>`);
+            printWindow.document.close();
+            printWindow.print();
         }
 
         function clearTable() {
@@ -146,11 +148,16 @@ function saveData(data) {
         document.getElementById('productForm').addEventListener('submit', function (event) {
             event.preventDefault();
 
-            const itemName = document.getElementById('itemName').value;
+            const itemName = document.getElementById('itemName').value.trim();
             const price = parseFloat(document.getElementById('price').value);
             const quantity = parseFloat(document.getElementById('quantity').value);
-            const total = price * quantity;
 
+            if (!itemName || isNaN(price) || isNaN(quantity) || price <= 0 || quantity <= 0) {
+                alert("Please enter valid item details.");
+                return;
+            }
+
+            const total = price * quantity;
             const newProduct = { itemName, price, quantity, total };
 
             const products = loadData();
