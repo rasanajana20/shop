@@ -48,7 +48,7 @@ body {
         visibility: hidden;
     }
     #receipt-container, #receipt-container * {
-        font-size: 50px;
+        font-size: 35px;
         visibility: visible;
     }
     #receipt-container {
@@ -118,76 +118,3 @@ th {
     box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Mobile Styles */
-@media (max-width: 768px) {
-    /* Header and Navbar adjustments */
-    .header {
-        padding: 10px;
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .logo {
-        font-size: 1.5em;
-    }
-
-    .navbar ul {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .navbar li {
-        width: 100%;
-        text-align: left;
-    }
-
-    .navbar li a {
-        padding: 8px 15px;
-        font-size: 14px;
-    }
-
-    /* Table adjustments */
-    table {
-        width: 100%;
-        margin: 10px 0;
-    }
-
-    th, td {
-        font-size: 14px;
-        padding: 10px;
-    }
-
-    /* Form adjustments */
-    #productForm, #productsTable {
-        padding: 20px;
-    }
-
-    /* Footer adjustments */
-    .footer {
-        font-size: 14px;
-    }
-}
-
-/* Extra small mobile styles */
-@media (max-width: 480px) {
-    .header {
-        padding: 8px;
-    }
-
-    .logo {
-        font-size: 1.2em;
-    }
-
-    .navbar li a {
-        font-size: 12px;
-        padding: 6px 12px;
-    }
-
-    .footer {
-        font-size: 12px;
-    }
-
-    table {
-        font-size: 12px;
-    }
-}
