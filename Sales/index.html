@@ -44,47 +44,11 @@
         <h2>Shop</h2>
         <pre id="receipt">Receipt:</pre>
     </div>
+
     <button onclick="printReceipt()">Print Receipt</button>
     <button onclick="clearTable()">Clear Table</button>
 
     <script>
-
-let printerDevice;
-        async function connectPrinter() {
-            try {
-                printerDevice = await navigator.bluetooth.requestDevice({
-                    acceptAllDevices: true,
-                    optionalServices: [0x1101] // May need to specify correct service UUID
-                });
-                console.log("Connected to:", printerDevice.name);
-                alert("Printer connected: " + printerDevice.name);
-            } catch (error) {
-                console.error("Connection failed", error);
-                alert("Failed to connect to printer");
-            }
-        }
-
-        async function printText() {
-            if (!printerDevice) {
-                alert("Please connect to the printer first");
-                return;
-            }
-            try {
-                const text = document.getElementById("printText").value + "\n";
-                const encoder = new TextEncoder();
-                const data = encoder.encode(text);
-
-                const server = await printerDevice.gatt.connect();
-                const service = await server.getPrimaryService(0x1101); // Adjust UUID if necessary
-                const characteristic = await service.getCharacteristic(0x2A57); // Adjust UUID
-                await characteristic.writeValue(data);
-                alert("Text sent to printer");
-            } catch (error) {
-                console.error("Printing failed", error);
-                alert("Printing failed");
-            }
-        }
-
         function saveData(data) {
             localStorage.setItem('products', JSON.stringify(data));
         }
