@@ -48,7 +48,7 @@ body {
         visibility: hidden;
     }
     #receipt-container, #receipt-container * {
-        font-size: 35px;
+        font-size: 50px;
         visibility: visible;
     }
     #receipt-container {
