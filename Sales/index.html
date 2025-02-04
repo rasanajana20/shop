@@ -7,20 +7,19 @@
     <link rel="stylesheet" href="main.css">
 </head>
 <body>
-
     <header class="header">
         <nav class="navbar"></nav>
     </header>
 
     <form id="productForm">
         <label for="itemName">Item Name:</label>
-        <input type="text" id="itemName" name="itemName" required><br><br>
+        <input type="text" id="itemName" required><br><br>
 
         <label for="price">Price:</label>
-        <input type="number" id="price" name="price" required><br><br>
+        <input type="number" id="price" required><br><br>
 
         <label for="quantity">Quantity:</label>
-        <input type="number" id="quantity" name="quantity" step="any" required><br><br>
+        <input type="number" id="quantity" step="any" required><br><br>
 
         <button type="submit">Add to Table</button>
     </form>
@@ -35,9 +34,7 @@
                 <th>Action</th>
             </tr>
         </thead>
-        <tbody>
-            <!-- Dynamic rows will be added here -->
-        </tbody>
+        <tbody></tbody>
     </table>
 
     <div id="receipt-container">
@@ -49,13 +46,14 @@
     <button onclick="clearTable()">Clear Table</button>
 
     <script>
+        document.addEventListener("DOMContentLoaded", updateTable);
+
         function saveData(data) {
             localStorage.setItem('products', JSON.stringify(data));
         }
 
         function loadData() {
-            const storedData = localStorage.getItem('products');
-            return storedData ? JSON.parse(storedData) : [];
+            return JSON.parse(localStorage.getItem('products')) || [];
         }
 
         function updateTable() {
@@ -67,9 +65,9 @@
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${product.itemName}</td>
-                    <td>${product.price.toFixed(2)}</td>
+                    <td>${product.price}</td>
                     <td>${product.quantity}</td>
-                    <td>${product.total.toFixed(2)}</td>
+                    <td>${product.total}</td>
                     <td>
                         <button onclick="editProduct(${index})">Edit</button>
                         <button onclick="deleteProduct(${index})">Delete</button>
@@ -77,30 +75,22 @@
                 `;
                 tableBody.appendChild(row);
             });
-
             updateReceipt(products);
         }
 
         function updateReceipt(products) {
-            const receipt = document.getElementById('receipt');
             let receiptText = 'Receipt:\n\n';
             let grandTotal = 0;
-
             products.forEach(product => {
-                receiptText += `${product.itemName} - ${product.price.toFixed(2)} x ${product.quantity} = ${product.total.toFixed(2)}\n`;
+                receiptText += `${product.itemName} - ${product.price} x ${product.quantity} = ${product.total}\n`;
                 grandTotal += product.total;
             });
-
-            receiptText += `\nGrand Total: ${grandTotal.toFixed(2)}`;
-            receipt.textContent = receiptText;
+            receiptText += `\nGrand Total: ${grandTotal}`;
+            document.getElementById('receipt').textContent = receiptText;
         }
 
         function printReceipt() {
-            const receiptText = document.getElementById("receipt").textContent;
-            const printWindow = window.open("", "", "width=400,height=600");
-            printWindow.document.write(`<pre>${receiptText}</pre>`);
-            printWindow.document.close();
-            printWindow.print();
+            window.print();
         }
 
         function clearTable() {
@@ -110,36 +100,23 @@
 
         document.getElementById('productForm').addEventListener('submit', function (event) {
             event.preventDefault();
-
-            const itemName = document.getElementById('itemName').value.trim();
+            const itemName = document.getElementById('itemName').value;
             const price = parseFloat(document.getElementById('price').value);
             const quantity = parseFloat(document.getElementById('quantity').value);
-
-            if (!itemName || isNaN(price) || isNaN(quantity) || price <= 0 || quantity <= 0) {
-                alert("Please enter valid item details.");
-                return;
-            }
-
             const total = price * quantity;
-            const newProduct = { itemName, price, quantity, total };
-
             const products = loadData();
-            products.push(newProduct);
-
+            products.push({ itemName, price, quantity, total });
             saveData(products);
             updateTable();
-
-            document.getElementById('productForm').reset();
+            this.reset();
         });
 
         function editProduct(index) {
             const products = loadData();
             const product = products[index];
-
             document.getElementById('itemName').value = product.itemName;
             document.getElementById('price').value = product.price;
             document.getElementById('quantity').value = product.quantity;
-
             products.splice(index, 1);
             saveData(products);
             updateTable();
@@ -151,37 +128,8 @@
             saveData(products);
             updateTable();
         }
-
-        window.onload = updateTable;
-
-        document.addEventListener("keydown", function(event) {
-            let inputs = [...document.querySelectorAll("input, button")];
-            let focusedIndex = inputs.indexOf(document.activeElement);
-
-            if (event.key === "ArrowDown" && focusedIndex < inputs.length - 1) {
-                event.preventDefault();
-                inputs[focusedIndex + 1].focus();
-            }
-            if (event.key === "ArrowUp" && focusedIndex > 0) {
-                event.preventDefault();
-                inputs[focusedIndex - 1].focus();
-            }
-            if (event.key === "ArrowRight" && focusedIndex < inputs.length - 1) {
-                event.preventDefault();
-                inputs[focusedIndex + 1].focus();
-            }
-            if (event.key === "ArrowLeft" && focusedIndex > 0) {
-                event.preventDefault();
-                inputs[focusedIndex - 1].focus();
-            }
-            if (event.key === "Enter" && document.activeElement.tagName === "BUTTON") {
-                event.preventDefault();
-                document.activeElement.click();
-            }
-        });
     </script>
 
     <footer class="footer"></footer>
-
 </body>
 </html>
